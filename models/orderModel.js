@@ -21,6 +21,9 @@ const orderSchema = new mongoose.Schema({
         country: {type: String, required: true},
     },
 
+    checkoutId: String,
+    paypalOrderId: String,
+    shippedAt: Date,
     paymentMethod: {type: String, required: true},
     paymentResult: {
         id: String,
@@ -46,6 +49,10 @@ const orderSchema = new mongoose.Schema({
     timestamps: true,
 }
 );
+
+orderSchema.index({ user: 1, checkoutId: 1 }, {
+    unique: true, partialFilterExpression: { checkoutId: { $type: 'string' } },
+});
 
 const Order = mongoose.model('Order', orderSchema);
 

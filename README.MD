@@ -12,3 +12,9 @@
 - 📦 [Repository](https://github.com/davewdh/circuit-supply-backend)
 - 🖥 [Storefront](https://circuit-supply-frontend.onrender.com)
 - [Live API](https://circuit-supply-backend.onrender.com)
+
+### PayPal Sandbox checkout
+
+Set `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` on the API service using a PayPal Sandbox app. The API creates and captures USD orders using PayPal's sandbox endpoint. Use a sandbox buyer account to run the payment flow. The server also requires `JWT_SECRET` and `MONGODB_URI`.
+
+Admins can open **Manage orders** from the storefront account menu. Fulfillment can move from paid to shipped and then delivered. Checkout validates current stock at quote and placement time.

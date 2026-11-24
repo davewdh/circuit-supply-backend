@@ -7,7 +7,9 @@ import userRouter from './routers/userRouter.js';
 import productRouter from './routers/productRouter.js';
 import orderRouter from './routers/orderRouter.js';
 import Product from './models/productsModel.js';
+import Order from './models/orderModel.js';
 import { products } from './products.js';
+import { sandboxClientId } from './paypal.js';
 
 dotenv.config();
 
@@ -47,12 +49,13 @@ app.get('/ping', async (req, res) => {
 });
 
 app.get('/api/config/paypal', (req, res) => {
-  res.send(process.env.PAYPAL_CLIENT_ID || 'sb');
+  res.send({ clientId: sandboxClientId() });
 });
 
 app.get('/', (req, res) => res.status(200).send('Circuit Supply API'));
 
 async function start() {
+  if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is required.');
   await mongoose.connect(connection_url, {
     useCreateIndex: true,
     useNewUrlParser: true,
@@ -67,6 +70,8 @@ async function start() {
       { upsert: true }
     );
   }
+
+  await Order.init();
 
   app.listen(port, () => console.log(`Listening on port ${port}`));
 }
