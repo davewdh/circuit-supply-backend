@@ -41,8 +41,11 @@ userRouter.post("/register", expressAsyncHandler(async (req,res) => {
     })
 }));
 
-userRouter.get('/:id', expressAsyncHandler(async(req,res) => {
-    const user = await User.findById(req.params.id);
+userRouter.get('/:id', isAuth, expressAsyncHandler(async(req,res) => {
+    if (req.params.id !== String(req.user._id)) {
+        return res.status(404).send({ message: 'User not found' });
+    }
+    const user = await User.findById(req.params.id).select('-password');
 
     if(user){
         res.send(user);

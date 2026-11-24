@@ -1,7 +1,9 @@
 import express from 'express';
 import expressAsyncHandler from 'express-async-handler';
 import Order from '../models/orderModel.js';
-import { isAuth, isAdmin } from '../utils.js';
+import User from '../models/userModel.js';
+import { usesLegacyAdminPassword } from '../users.js';
+import { isAuth } from '../utils.js';
 import { assertQuoteMatches, isOrderId, orderError, quoteOrder, validateShippingAddress } from '../checkout.js';
 import { captureSandboxOrder, createSandboxOrder } from '../paypal.js';
 
@@ -9,19 +11,32 @@ const orderRouter = express.Router();
 
 async function findOrder(id, user) {
     if (!isOrderId(id)) throw orderError(404, 'Order not found.');
-    const filter = user.isAdmin ? { _id: id } : { _id: id, user: user._id };
+    const filter = user.canManageOrders ? { _id: id } : { _id: id, user: user._id };
     const order = await Order.findOne(filter);
     if (!order) throw orderError(404, 'Order not found.');
     return order;
 }
 
 orderRouter.use(isAuth);
+orderRouter.use(expressAsyncHandler(async (req, res, next) => {
+    if (req.user.isAdmin) {
+        const user = await User.findById(req.user._id).select('isAdmin email password updatedAt');
+        req.user.canManageOrders = Boolean(user?.isAdmin && !usesLegacyAdminPassword(user) &&
+            req.user.iat >= Math.floor(user.updatedAt.getTime() / 1000));
+    }
+    next();
+}));
+
+function requireOrderAdmin(req, res, next) {
+    if (!req.user.canManageOrders) return res.status(401).send({ message: 'An authorized admin account is required.' });
+    next();
+}
 
 orderRouter.get('/mine', expressAsyncHandler(async (req, res) => {
     res.send(await Order.find({ user: req.user._id }).sort({ createdAt: -1 }));
 }));
 
-orderRouter.get('/admin', isAdmin, expressAsyncHandler(async (req, res) => {
+orderRouter.get('/admin', requireOrderAdmin, expressAsyncHandler(async (req, res) => {
     res.send(await Order.find().sort({ createdAt: -1 }).limit(100)
         .select('createdAt totalPrice isPaid paidAt shippedAt isDelivered deliveredAt'));
 }));
@@ -84,7 +99,7 @@ orderRouter.put('/:id/pay', expressAsyncHandler(async (req, res) => {
     res.send({ order: updated || await Order.findById(order._id) });
 }));
 
-orderRouter.patch('/:id/fulfillment', isAdmin, expressAsyncHandler(async (req, res) => {
+orderRouter.patch('/:id/fulfillment', requireOrderAdmin, expressAsyncHandler(async (req, res) => {
     if (!isOrderId(req.params.id)) throw orderError(404, 'Order not found.');
     const { status } = req.body;
     if (status !== 'shipped' && status !== 'delivered') throw orderError(400, 'Choose shipped or delivered.');
