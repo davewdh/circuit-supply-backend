@@ -6,20 +6,14 @@ import dotenv from 'dotenv';
 import userRouter from './routers/userRouter.js';
 import productRouter from './routers/productRouter.js';
 import orderRouter from './routers/orderRouter.js';
+import Product from './models/productsModel.js';
+import { products } from './products.js';
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 5000;
 const connection_url = process.env.MONGODB_URI;
-
-mongoose.connect(connection_url, {
-  useCreateIndex: true,
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
 
 app.use(express.json());
 app.use(cors());
@@ -58,4 +52,26 @@ app.get('/api/config/paypal', (req, res) => {
 
 app.get('/', (req, res) => res.status(200).send('Hello, it is Amazon clone project.'));
 
-app.listen(port, () => console.log(`Listening on localhost:${port}`));
+async function start() {
+  await mongoose.connect(connection_url, {
+    useCreateIndex: true,
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+
+  // Add missing catalog entries without changing existing stock or order references.
+  for (const product of products) {
+    await Product.updateOne(
+      { name: product.name },
+      { $setOnInsert: product },
+      { upsert: true }
+    );
+  }
+
+  app.listen(port, () => console.log(`Listening on port ${port}`));
+}
+
+start().catch(error => {
+  console.error('API startup failed:', error.message);
+  process.exit(1);
+});
