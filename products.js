@@ -23,6 +23,18 @@ const catalog = [
         'A compact 65-watt USB-C power adapter with a matching detachable cable.'],
     ['Pivot Single Monitor Arm', 'monitor-arm', 'accessories', 99, 14,
         'A desk-clamp monitor arm with adjustable height, tilt, and a VESA mounting plate.'],
+    ['Arc Aluminum Laptop Riser', 'laptop-riser', 'accessories', 49, 22,
+        'An open-frame aluminum riser that raises a laptop screen and leaves space below for a keyboard.'],
+    ['Junction USB-C Dock', 'docking-station', 'accessories', 139, 15,
+        'A desktop dock for connecting a display, wired network, and USB accessories through one USB-C cable.'],
+    ['Obsidian TKL Mechanical Keyboard', 'tkl-keyboard', 'accessories', 119, 19,
+        'A graphite tenkeyless mechanical keyboard with tactile switches and a detachable cable.'],
+    ['Frame 1080p Webcam', 'webcam', 'accessories', 79, 25,
+        'A desktop webcam with a monitor mount and a 1080p image for video calls.'],
+    ['Relay Wired Headset', 'wired-headset', 'earphones', 69, 24,
+        'An over-ear wired headset with a boom microphone for calls and gaming.'],
+    ['Roam 15 Portable Monitor', 'portable-monitor', 'monitor', 199, 10,
+        'A slim portable display with a folding stand for a second screen away from your desk.'],
 ];
 
 export const products = catalog.map(([name, image, category, price, stock, description]) => ({
