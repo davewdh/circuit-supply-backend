@@ -11,6 +11,18 @@ const catalog = [
         'A 14-inch aluminum laptop with 16 GB of memory and a 512 GB SSD. Stand sold separately.'],
     ['Relay USB-C Hub', 'hub', 'accessories', 45, 28,
         'A travel-friendly USB-C hub with HDMI, two USB-A ports, and USB-C power passthrough.'],
+    ['Signal USB Microphone Kit', 'microphone', 'earphones', 129, 16,
+        'A USB desktop microphone with a clamp-mounted boom arm and a hardware gain dial.'],
+    ['Duet Desktop Speakers', 'speakers', 'earphones', 119, 20,
+        'A compact stereo pair with front volume control and a matte black finish.'],
+    ['Beam Monitor Light Bar', 'light-bar', 'accessories', 69, 25,
+        'A slim adjustable light bar that clips to a display and illuminates the desk beneath it.'],
+    ['Basis Felt Desk Mat', 'desk-mat', 'accessories', 35, 36,
+        'A navy felt desk mat sized for a keyboard and mouse, with a soft low-profile surface.'],
+    ['Current 65W USB-C Charger', 'charger', 'accessories', 49, 32,
+        'A compact 65-watt USB-C power adapter with a matching detachable cable.'],
+    ['Pivot Single Monitor Arm', 'monitor-arm', 'accessories', 99, 14,
+        'A desk-clamp monitor arm with adjustable height, tilt, and a VESA mounting plate.'],
 ];
 
 export const products = catalog.map(([name, image, category, price, stock, description]) => ({
