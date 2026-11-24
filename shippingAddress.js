@@ -1,5 +1,45 @@
-const canadaRegions = new Set('AB BC MB NB NL NS NT NU ON PE QC SK YT'.split(' '));
-const usRegions = new Set('AK AL AR AS AZ CA CO CT DC DE FL FM GA GU HI IA ID IL IN KS KY LA MA MD ME MH MI MN MO MP MS MT NC ND NE NH NJ NM NV NY OH OK OR PA PR PW RI SC SD TN TX UT VA VI VT WA WI WV WY AA AE AP'.split(' '));
+const regionKey = value => value.normalize('NFD').replace(/\p{M}/gu, '')
+    .toLowerCase().replace(/[^a-z]/g, '');
+
+function regionAliases(entries) {
+    const aliases = new Map();
+    for (const [code, ...names] of entries) {
+        for (const name of [code, ...names]) aliases.set(regionKey(name), code);
+    }
+    return aliases;
+}
+
+const canadaRegions = regionAliases([
+    ['AB', 'Alberta'], ['BC', 'British Columbia'], ['MB', 'Manitoba'],
+    ['NB', 'New Brunswick'], ['NL', 'Newfoundland and Labrador', 'Newfoundland'],
+    ['NS', 'Nova Scotia'], ['NT', 'Northwest Territories'], ['NU', 'Nunavut'],
+    ['ON', 'Ontario'], ['PE', 'Prince Edward Island', 'PEI'], ['QC', 'Québec'],
+    ['SK', 'Saskatchewan'], ['YT', 'Yukon', 'Yukon Territory'],
+]);
+
+const usRegions = regionAliases([
+    ['AL', 'Alabama'], ['AK', 'Alaska'], ['AZ', 'Arizona'], ['AR', 'Arkansas'],
+    ['CA', 'California'], ['CO', 'Colorado'], ['CT', 'Connecticut'], ['DE', 'Delaware'],
+    ['DC', 'District of Columbia', 'Washington DC'], ['FL', 'Florida'], ['GA', 'Georgia'],
+    ['HI', 'Hawaii'], ['ID', 'Idaho'], ['IL', 'Illinois'], ['IN', 'Indiana'],
+    ['IA', 'Iowa'], ['KS', 'Kansas'], ['KY', 'Kentucky'], ['LA', 'Louisiana'],
+    ['ME', 'Maine'], ['MD', 'Maryland'], ['MA', 'Massachusetts'], ['MI', 'Michigan'],
+    ['MN', 'Minnesota'], ['MS', 'Mississippi'], ['MO', 'Missouri'], ['MT', 'Montana'],
+    ['NE', 'Nebraska'], ['NV', 'Nevada'], ['NH', 'New Hampshire'], ['NJ', 'New Jersey'],
+    ['NM', 'New Mexico'], ['NY', 'New York'], ['NC', 'North Carolina'],
+    ['ND', 'North Dakota'], ['OH', 'Ohio'], ['OK', 'Oklahoma'], ['OR', 'Oregon'],
+    ['PA', 'Pennsylvania'], ['RI', 'Rhode Island'], ['SC', 'South Carolina'],
+    ['SD', 'South Dakota'], ['TN', 'Tennessee'], ['TX', 'Texas'], ['UT', 'Utah'],
+    ['VT', 'Vermont'], ['VA', 'Virginia'], ['WA', 'Washington'], ['WV', 'West Virginia'],
+    ['WI', 'Wisconsin'], ['WY', 'Wyoming'], ['AS', 'American Samoa'], ['FM', 'Micronesia', 'Federated States of Micronesia'],
+    ['GU', 'Guam'], ['MH', 'Marshall Islands'], ['MP', 'Northern Mariana Islands'],
+    ['PR', 'Puerto Rico'], ['PW', 'Palau'], ['VI', 'Virgin Islands', 'US Virgin Islands'],
+    ['AA', 'Armed Forces Americas'], ['AE', 'Armed Forces Europe'], ['AP', 'Armed Forces Pacific'],
+]);
+
+function normalizeRegion(value, regions) {
+    return /^[\p{L}\p{M}\s.,'’\-]+$/u.test(value) ? regions.get(regionKey(value)) : undefined;
+}
 
 const fields = {
     fullName: ['Enter the recipient’s full name.', 100],
@@ -34,8 +74,8 @@ export function validateShippingAddress(input) {
     const country = address.country.toLowerCase().replace(/[^a-z]/g, '');
     if (country === 'ca' || country === 'canada') {
         address.country = 'Canada';
-        address.region = address.region.toUpperCase();
-        if (!canadaRegions.has(address.region)) errors.region = 'Enter a Canadian province or territory abbreviation, such as ON.';
+        address.region = normalizeRegion(address.region, canadaRegions);
+        if (!address.region) errors.region = 'Enter a Canadian province or territory, such as Ontario or ON.';
         const postal = address.postalcode.toUpperCase().replace(/\s/g, '');
         if (!/^[ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTV-Z]\d[ABCEGHJ-NPRSTV-Z]\d$/.test(postal)) {
             errors.postalcode = 'Enter a Canadian postal code in the format A1A 1A1.';
@@ -44,8 +84,8 @@ export function validateShippingAddress(input) {
         }
     } else if (['us', 'usa', 'unitedstates', 'unitedstatesofamerica'].includes(country)) {
         address.country = 'United States';
-        address.region = address.region.toUpperCase();
-        if (!usRegions.has(address.region)) errors.region = 'Enter a U.S. state or territory abbreviation, such as NY.';
+        address.region = normalizeRegion(address.region, usRegions);
+        if (!address.region) errors.region = 'Enter a U.S. state or territory, such as New York or NY.';
         if (!/^\d{5}(?:-\d{4})?$/.test(address.postalcode)) errors.postalcode = 'Enter a 5-digit ZIP code or ZIP+4.';
     }
 
