@@ -50,7 +50,7 @@ app.get('/api/config/paypal', (req, res) => {
   res.send(process.env.PAYPAL_CLIENT_ID || 'sb');
 });
 
-app.get('/', (req, res) => res.status(200).send('Hello, it is Amazon clone project.'));
+app.get('/', (req, res) => res.status(200).send('Circuit Supply API'));
 
 async function start() {
   await mongoose.connect(connection_url, {

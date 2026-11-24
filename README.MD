@@ -7,7 +7,8 @@
   </p>
 <hr>
 
-## Clone Amazon 
+## Circuit Supply API
 
-- 📦 [Repository](https://github.com/davewdh/clone-amazon-backend)
-- 🖥 [Site](https://clone-amazon-ij40.onrender.com)
+- 📦 [Repository](https://github.com/davewdh/circuit-supply-backend)
+- 🖥 [Storefront](https://circuit-supply-frontend.onrender.com)
+- [Live API](https://circuit-supply-backend.onrender.com)
