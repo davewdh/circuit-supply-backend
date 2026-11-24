@@ -46,7 +46,10 @@ userRouter.post('/signin', expressAsyncHandler(async (req, res) => {
 userRouter.post('/register', expressAsyncHandler(async (req, res) => {
     const name = text(req.body?.name);
     const email = text(req.body?.email).toLowerCase();
-    const { password } = req.body || {};
+    const { password, passwordConfirmation } = req.body || {};
+    if (typeof password !== 'string' || password !== passwordConfirmation) {
+        return res.status(400).send({ message: 'Passwords do not match.' });
+    }
     if (!name || name.length > 100) return res.status(400).send({ message: 'Enter a name of 1 to 100 characters.' });
     if (!validEmail(email)) return res.status(400).send({ message: 'Enter a valid email address.' });
     const issue = passwordError(password);
