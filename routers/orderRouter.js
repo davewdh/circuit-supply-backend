@@ -4,7 +4,8 @@ import Order from '../models/orderModel.js';
 import User from '../models/userModel.js';
 import { usesLegacyAdminPassword } from '../users.js';
 import { isAuth } from '../utils.js';
-import { assertQuoteMatches, isOrderId, orderError, quoteOrder, validateShippingAddress } from '../checkout.js';
+import { assertQuoteMatches, isOrderId, orderError, quoteOrder } from '../checkout.js';
+import { validateShippingAddress } from '../shippingAddress.js';
 import { captureSandboxOrder, createSandboxOrder } from '../paypal.js';
 
 const orderRouter = express.Router();
@@ -39,6 +40,10 @@ orderRouter.get('/mine', expressAsyncHandler(async (req, res) => {
 orderRouter.get('/admin', requireOrderAdmin, expressAsyncHandler(async (req, res) => {
     res.send(await Order.find().sort({ createdAt: -1 }).limit(100)
         .select('createdAt totalPrice isPaid paidAt shippedAt isDelivered deliveredAt'));
+}));
+
+orderRouter.post('/shipping-address', expressAsyncHandler(async (req, res) => {
+    res.send({ address: validateShippingAddress(req.body.shippingAddress) });
 }));
 
 orderRouter.post('/quote', expressAsyncHandler(async (req, res) => {
@@ -121,7 +126,10 @@ orderRouter.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
     const status = error.status || (error.name === 'ValidationError' ? 400 : 500);
     if (status === 500) console.error(error);
-    res.status(status).send({ message: status === 500 ? 'The order could not be processed. Try again.' : error.message });
+    res.status(status).send({
+        message: status === 500 ? 'The order could not be processed. Try again.' : error.message,
+        ...(error.fields ? { fields: error.fields } : {}),
+    });
 });
 
 export default orderRouter;

@@ -55,14 +55,3 @@ export function assertQuoteMatches(input, quote) {
     );
     if (changed) throw orderError(409, `The price of ${changed.name} changed. Refresh the order summary to continue.`);
 }
-
-export function validateShippingAddress(input) {
-    const address = {};
-    for (const field of ['fullName', 'address', 'city', 'postalcode', 'country']) {
-        if (typeof input?.[field] !== 'string' || !input[field].trim() || input[field].length > 200) {
-            throw orderError(400, 'Enter a complete shipping address.');
-        }
-        address[field] = input[field].trim();
-    }
-    return address;
-}
